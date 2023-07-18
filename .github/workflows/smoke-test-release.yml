@@ -1,4 +1,4 @@
-name: Smoke test release
+name: Smoke test release (7.9.0)
 on:
     release:
         types: [released, prereleased, published]
