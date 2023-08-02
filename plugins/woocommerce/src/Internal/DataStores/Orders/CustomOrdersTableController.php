@@ -328,8 +328,6 @@ class CustomOrdersTableController {
 
 	/**
 	 * Handler for the all settings updated hook.
-	 *
-	 * @param string $feature_id Feature ID.
 	 */
 	private function handle_data_sync_option_changed() {
 		$data_sync_is_enabled = $this->data_synchronizer->data_sync_is_enabled();
