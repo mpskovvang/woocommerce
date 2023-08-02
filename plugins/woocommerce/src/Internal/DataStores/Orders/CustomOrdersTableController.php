@@ -116,7 +116,6 @@ class CustomOrdersTableController {
 		self::add_filter( 'woocommerce_debug_tools', array( $this, 'add_initiate_regeneration_entry_to_tools_array' ), 999, 1 );
 		self::add_filter( 'updated_option', array( $this, 'process_updated_option' ), 999, 3 );
 		self::add_filter( 'pre_update_option', array( $this, 'process_pre_update_option' ), 999, 3 );
-		self::add_action( FeaturesController::FEATURE_ENABLED_CHANGED_ACTION, array( $this, 'handle_data_sync_option_changed' ), 10, 1 );
 		self::add_action( 'woocommerce_after_register_post_type', array( $this, 'register_post_type_for_order_placeholders' ), 10, 0 );
 		self::add_action( FeaturesController::FEATURE_ENABLED_CHANGED_ACTION, array( $this, 'handle_feature_enabled_changed' ), 10, 2 );
 	}
@@ -286,8 +285,11 @@ class CustomOrdersTableController {
 	 * @param mixed  $value New value of the setting.
 	 */
 	private function process_updated_option( $option, $old_value, $value ) {
-		if ( DataSynchronizer::ORDERS_DATA_SYNC_ENABLED_OPTION === $option && 'no' === $value ) {
-			$this->data_synchronizer->cleanup_synchronization_state();
+		if ( DataSynchronizer::ORDERS_DATA_SYNC_ENABLED_OPTION === $option ) {
+			$this->handle_data_sync_option_changed();
+			if ( 'no' === $value ) {
+				$this->data_synchronizer->cleanup_synchronization_state();
+			}
 		}
 	}
 
@@ -329,10 +331,7 @@ class CustomOrdersTableController {
 	 *
 	 * @param string $feature_id Feature ID.
 	 */
-	private function handle_data_sync_option_changed( string $feature_id ) {
-		if ( DataSynchronizer::ORDERS_DATA_SYNC_ENABLED_OPTION !== $feature_id ) {
-			return;
-		}
+	private function handle_data_sync_option_changed() {
 		$data_sync_is_enabled = $this->data_synchronizer->data_sync_is_enabled();
 
 		if ( ! $this->data_synchronizer->check_orders_table_exists() ) {
