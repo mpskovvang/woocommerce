@@ -117,7 +117,6 @@ class CustomOrdersTableController {
 		self::add_filter( 'updated_option', array( $this, 'process_updated_option' ), 999, 3 );
 		self::add_filter( 'pre_update_option', array( $this, 'process_pre_update_option' ), 999, 3 );
 		self::add_action( 'woocommerce_after_register_post_type', array( $this, 'register_post_type_for_order_placeholders' ), 10, 0 );
-		self::add_action( FeaturesController::FEATURE_ENABLED_CHANGED_ACTION, array( $this, 'handle_feature_enabled_changed' ), 10, 2 );
 	}
 
 	/**
@@ -309,12 +308,19 @@ class CustomOrdersTableController {
 			return $value;
 		}
 
-		if ( self::CUSTOM_ORDERS_TABLE_USAGE_ENABLED_OPTION !== $option || $value === $old_value || false === $old_value ) {
+		if ( self::CUSTOM_ORDERS_TABLE_USAGE_ENABLED_OPTION !== $option || 'no' === $value ) {
 			return $value;
 		}
 
 		$this->order_cache->flush();
+		if ( ! $this->data_synchronizer->check_orders_table_exists() ) {
+			$this->data_synchronizer->create_database_tables();
+		}
 
+		$tables_created = get_option( DataSynchronizer::ORDERS_TABLE_CREATED ) === 'yes';
+		if ( ! $tables_created ) {
+			return 'no';
+		}
 		/**
 		 * Re-enable the following code once the COT to posts table sync is implemented (it's currently commented out to ease testing).
 		$sync_is_pending = 0 !== $this->data_synchronizer->get_current_orders_pending_sync_count();
@@ -345,23 +351,6 @@ class CustomOrdersTableController {
 			$this->batch_processing_controller->enqueue_processor( DataSynchronizer::class );
 		} else {
 			$this->batch_processing_controller->remove_processor( DataSynchronizer::class );
-		}
-	}
-
-	/**
-	 * Handle the 'woocommerce_feature_enabled_changed' action,
-	 * if the custom orders table feature is enabled create the database tables if they don't exist.
-	 *
-	 * @param string $feature_id The id of the feature that is being enabled or disabled.
-	 * @param bool   $is_enabled True if the feature is being enabled, false if it's being disabled.
-	 */
-	private function handle_feature_enabled_changed( $feature_id, $is_enabled ): void {
-		if ( self::CUSTOM_ORDERS_TABLE_USAGE_ENABLED_OPTION !== $feature_id || ! $is_enabled ) {
-			return;
-		}
-
-		if ( ! $this->data_synchronizer->check_orders_table_exists() ) {
-			$this->create_custom_orders_tables( false );
 		}
 	}
 
@@ -402,10 +391,9 @@ class CustomOrdersTableController {
 	 * @return array Feature setting object.
 	 */
 	public function get_hpos_setting_for_feature() {
-		if ( Constants::get_constant( 'WC_INSTALLING' ) ) {
+		if ( ! did_action( 'woocommerce_init' ) ) {
 			return array();
 		}
-
 		$sync_status             = $this->data_synchronizer->get_sync_status();
 		$hpos_enabled            = $this->custom_orders_table_usage_is_enabled();
 		$plugin_info             = $this->features_controller->get_compatible_plugins_for_feature( 'custom_order_tables', true );
@@ -442,10 +430,9 @@ class CustomOrdersTableController {
 	 * @return array Feature setting object.
 	 */
 	public function get_hpos_setting_for_sync() {
-		if ( Constants::get_constant( 'WC_INSTALLING' ) ) {
+		if ( ! did_action( 'woocommerce_init' ) ) {
 			return array();
 		}
-
 		$sync_status      = $this->data_synchronizer->get_sync_status();
 		$sync_in_progress = $this->batch_processing_controller->is_enqueued( get_class( $this->data_synchronizer ) );
 		$sync_enabled     = get_option( DataSynchronizer::ORDERS_DATA_SYNC_ENABLED_OPTION );
