@@ -1,6 +1,7 @@
 /**
  * External dependencies
  */
+import { useQuery } from '@woocommerce/navigation';
 import { useState, useEffect, createContext } from '@wordpress/element';
 
 type ProductListItemType = {
@@ -22,15 +23,11 @@ type ProductListItemType = {
 
 type ProductListContextType = {
 	productList: ProductListItemType[];
-	setSearchTerm: ( searchTerm: string ) => void;
-	setCategory: ( category: string ) => void;
 	isLoading: boolean;
 };
 
 export const ProductListContext = createContext< ProductListContextType >( {
 	productList: [],
-	setSearchTerm: () => {},
-	setCategory: () => {},
 	isLoading: false,
 } );
 
@@ -47,18 +44,16 @@ export function ProductListContextProvider(
 	props: ProductListContextProviderProps
 ): JSX.Element {
 	const [ isLoading, setIsLoading ] = useState( false );
-	const [ searchTerm, setSearchTerm ] = useState( '' );
-	const [ category, setCategory ] = useState( '' );
 	const [ productList, setProductList ] = useState< ProductListItemType[] >(
 		[]
 	);
 
 	const contextValue = {
 		productList,
-		setSearchTerm,
-		setCategory,
 		isLoading,
 	};
+
+	const query = useQuery();
 
 	useEffect( () => {
 		setIsLoading( true );
@@ -67,9 +62,13 @@ export function ProductListContextProvider(
 		// Build up a query string
 		const params = new URLSearchParams();
 
-		params.append( 'term', searchTerm );
+		params.append( 'term', query.term ?? '' );
 		params.append( 'country', props.country ?? '' );
 		params.append( 'locale', props.locale ?? '' );
+
+		if ( query.category ) {
+			params.append( 'category', query.category );
+		}
 
 		const wccomSearchEndpoint =
 			'https://woocommerce.com/wp-json/wccom-extensions/1.0/search' +
@@ -85,7 +84,7 @@ export function ProductListContextProvider(
 			.finally( () => {
 				setIsLoading( false );
 			} );
-	}, [ searchTerm, category, props.country, props.locale ] );
+	}, [ query, props.country, props.locale ] );
 
 	return (
 		<ProductListContext.Provider value={ contextValue }>

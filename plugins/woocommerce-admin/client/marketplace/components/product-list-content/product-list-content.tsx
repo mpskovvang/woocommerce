@@ -29,7 +29,7 @@ export default function ProductListContent(): JSX.Element {
 				return (
 					<div
 						className="woocommerce-marketplace__extension-card"
-						key={ product.slug }
+						key={ product.id }
 					>
 						<p>{ product.title }</p>
 					</div>

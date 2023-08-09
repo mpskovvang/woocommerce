@@ -29,6 +29,7 @@
 	&--selected {
 		color: $white;
 		background-color: $gray-900;
+		fill: $white;
 	}
 }
 
@@ -106,4 +107,9 @@
 	padding: 6px $grid-unit-10;
 	line-height: 20px;
 	width: 100%;
+
+	&--selected {
+		color: $white;
+		background-color: $gray-900;
+	}
 }

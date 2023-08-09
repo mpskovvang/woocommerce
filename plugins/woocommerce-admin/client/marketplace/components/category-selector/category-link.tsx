@@ -2,6 +2,7 @@
  * External dependencies
  */
 import classNames from 'classnames';
+import { navigateTo, getNewPath } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -9,6 +10,16 @@ import classNames from 'classnames';
 import { Category } from './category-selector';
 
 export default function CategoryLink( props: Category ): JSX.Element {
+	function updateCategorySelection(
+		event: React.MouseEvent< HTMLButtonElement >
+	) {
+		const slug = event.currentTarget.value;
+
+		navigateTo( {
+			url: getNewPath( { category: slug } ),
+		} );
+	}
+
 	const classes = classNames(
 		'woocommerce-marketplace__category-item-button',
 		{
@@ -17,5 +28,13 @@ export default function CategoryLink( props: Category ): JSX.Element {
 		}
 	);
 
-	return <button className={ classes }>{ props.label }</button>;
+	return (
+		<button
+			className={ classes }
+			onClick={ updateCategorySelection }
+			value={ props.slug }
+		>
+			{ props.label }
+		</button>
+	);
 }

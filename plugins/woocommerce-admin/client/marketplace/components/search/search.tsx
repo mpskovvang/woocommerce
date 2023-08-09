@@ -3,24 +3,13 @@
  */
 import { __ } from '@wordpress/i18n';
 import { Icon, search } from '@wordpress/icons';
-import { useContext, useState } from '@wordpress/element';
+import { useEffect, useState } from '@wordpress/element';
+import { navigateTo, getNewPath, useQuery } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
  */
 import './search.scss';
-import { MARKETPLACE_URL } from '../constants';
-
-const searchPlaceholder = __( 'Search extensions and themes', 'woocommerce' );
-
-const marketplaceAPI = MARKETPLACE_URL + '/wp-json/wccom-extensions/1.0/search';
-
-export interface SearchProps {
-	locale?: string | 'en_US';
-	country?: string | undefined;
-}
-
-import { ProductListContext } from '../../contexts/product-list-context';
 
 const searchPlaceholder = __( 'Search extensions and themes', 'woocommerce' );
 
@@ -32,15 +21,21 @@ const searchPlaceholder = __( 'Search extensions and themes', 'woocommerce' );
 function Search(): JSX.Element {
 	const [ searchTerm, setSearchTerm ] = useState( '' );
 
-	const contextData = useContext( ProductListContext );
+	const query = useQuery();
+
+	useEffect( () => {
+		if ( query.term ) {
+			setSearchTerm( query.term );
+		}
+	}, [ query.term ] );
 
 	const runSearch = () => {
-		const query = searchTerm.trim();
-		if ( ! query ) {
-			return [];
-		}
+		const term = searchTerm.trim();
 
-		contextData.setSearchTerm( query );
+		// When the search term changes, we reset the category on purpose.
+		navigateTo( {
+			url: getNewPath( { term, category: null } ),
+		} );
 
 		return [];
 	};
@@ -48,13 +43,18 @@ function Search(): JSX.Element {
 	const handleInputChange = (
 		event: React.ChangeEvent< HTMLInputElement >
 	) => {
+		console.log( 'handleInputChange' );
+
 		setSearchTerm( event.target.value );
 	};
 
 	const handleKeyUp = ( event: { key: string } ) => {
+		console.log( handleKeyUp );
+
 		if ( event.key === 'Enter' ) {
 			runSearch();
 		}
+
 		if ( event.key === 'Escape' ) {
 			setSearchTerm( '' );
 		}

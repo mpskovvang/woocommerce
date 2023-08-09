@@ -4,6 +4,8 @@
 import { Dropdown } from '@wordpress/components';
 import { chevronDown, chevronUp, Icon } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
+import { navigateTo, getNewPath } from '@woocommerce/navigation';
+import classNames from 'classnames';
 
 /**
  * Internal dependencies
@@ -12,7 +14,18 @@ import { Category } from './category-selector';
 
 function DropdownContent( props: {
 	readonly categories: Category[];
+	readonly selected?: Category;
 } ): JSX.Element {
+	function updateCategorySelection(
+		event: React.MouseEvent< HTMLButtonElement >
+	) {
+		const slug = event.currentTarget.value;
+
+		navigateTo( {
+			url: getNewPath( { category: slug } ),
+		} );
+	}
+
 	return (
 		<ul className="woocommerce-marketplace__category-dropdown-list">
 			{ props.categories.map( ( category ) => (
@@ -20,7 +33,17 @@ function DropdownContent( props: {
 					className="woocommerce-marketplace__category-dropdown-item"
 					key={ category.slug }
 				>
-					<button className="woocommerce-marketplace__category-dropdown-item-button">
+					<button
+						className={ classNames(
+							'woocommerce-marketplace__category-dropdown-item-button',
+							{
+								'woocommerce-marketplace__category-dropdown-item-button--selected':
+									category.slug === props.selected?.slug,
+							}
+						) }
+						value={ category.slug }
+						onClick={ updateCategorySelection }
+					>
 						{ category.label }
 					</button>
 				</li>
@@ -36,6 +59,7 @@ type CategoryDropdownProps = {
 	buttonClassName?: string;
 	contentClassName?: string;
 	arrowIconSize?: number;
+	selected?: Category;
 };
 
 export default function CategoryDropdown(
@@ -61,7 +85,10 @@ export default function CategoryDropdown(
 			) }
 			className={ props.className }
 			renderContent={ () => (
-				<DropdownContent categories={ props.categories } />
+				<DropdownContent
+					categories={ props.categories }
+					selected={ props.selected }
+				/>
 			) }
 			contentClassName={ props.contentClassName }
 		/>
