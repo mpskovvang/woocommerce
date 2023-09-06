@@ -377,7 +377,8 @@ jobs:
             - name: Download release zip
               env:
                   GH_TOKEN: ${{ secrets.E2E_GH_TOKEN }}
-              run: gh release download ${{ needs.get-wp-versions.outputs.tag }} --dir tmp
+                  RELEASE_TAG: ${{ needs.get-wp-versions.outputs.tag }}
+              run: bash .github/workflows/scripts/release-download-zip.sh
 
             - name: Replace `plugins/woocommerce` with unzipped woocommerce release build
               run: unzip -d plugins -o tmp/woocommerce.zip
