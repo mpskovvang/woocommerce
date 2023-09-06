@@ -26,10 +26,16 @@ jobs:
             created: ${{ steps.created-at.outputs.created }}
         steps:
             - name: Validate tag
+              id: validate-tag
               if: ${{ github.event_name == 'workflow_dispatch' }}
               env:
                   GH_TOKEN: ${{ secrets.E2E_GH_TOKEN }}
-              run: gh release view "${{ inputs.tag }}" --repo=woocommerce/woocommerce
+                  RELEASE_TAG: ${{ inputs.tag }}
+              uses: actions/github-script@v6
+              with:
+                  script: |
+                      const script = require( './.github/workflows/scripts/release-validate-tag.js' );
+                      await script( { github, core } );
 
             - name: Get tag from triggered event
               id: get-tag
