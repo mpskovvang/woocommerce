@@ -2,7 +2,6 @@
 /**
  * Plugin Name: Enable Experimental Features
  * Description: Utility designed for E2E testing purposes. It activates experimental features in WooCommerce.
- * @package Automattic\WooCommerce\E2EPlaywright
  */
 
 function enable_experimental_features( $features ) {
