@@ -448,16 +448,17 @@ class CustomOrdersTableController {
 
 		return array(
 			'id'          => self::CUSTOM_ORDERS_TABLE_USAGE_ENABLED_OPTION,
-			'title'       => __( 'Data storage for orders', 'woocommerce' ),
+			'title'       => __( 'Order data storage', 'woocommerce' ),
 			'type'        => 'radio',
 			'options'     => array(
-				'no'  => __( 'WordPress post tables', 'woocommerce' ),
-				'yes' => __( 'High performance order storage (new)', 'woocommerce' ),
+				'no'  => __( 'WordPress posts storage (legacy)', 'woocommerce' ),
+				'yes' => __( 'High-performance order storage (recommended)', 'woocommerce' ),
 			),
 			'value'       => $hpos_enabled ? 'yes' : 'no',
 			'disabled'    => $disabled_option,
 			'desc'        => $plugin_incompat_warning,
 			'desc_at_end' => true,
+			'row_class' => self::CUSTOM_ORDERS_TABLE_USAGE_ENABLED_OPTION,
 		);
 	}
 
@@ -478,8 +479,8 @@ class CustomOrdersTableController {
 			$sync_message = sprintf(
 			// translators: %d: number of pending orders.
 				_n(
-					"There's %d order pending sync. Switching data storage while sync is incomplete is dangerous and can lead to order data corruption or loss!",
-					'There are %d orders pending sync. Switching data storage while sync is incomplete is dangerous and can lead to order data corruption or loss!',
+					"There's %d order pending sync. <strong>Switching data storage while sync is incomplete is dangerous and can lead to order data corruption or loss!</strong",
+					'There are %d orders pending sync. <strong>Switching data storage while sync is incomplete is dangerous and can lead to order data corruption or loss!</strong',
 					$sync_status['current_pending_count'],
 					'woocommerce'
 				),
@@ -496,8 +497,8 @@ class CustomOrdersTableController {
 			$sync_message = sprintf(
 				// translators: %d: number of pending orders.
 				_n(
-					"There's %d order pending sync. You can switch data storage for orders only when posts and orders table are in sync.",
-					'There are %d orders pending sync. You can switch data storage for orders only when posts and orders table are in sync.',
+					"There's %d order pending sync. You can switch data storage for orders <strong>only when posts and orders table are in sync</strong>.",
+					'There are %d orders pending sync. You can switch data storage for orders <strong>only when posts and orders table are in sync</strong>.',
 					$sync_status['current_pending_count'],
 					'woocommerce'
 				),
@@ -512,6 +513,14 @@ class CustomOrdersTableController {
 			'desc'                 => __( 'Keep the posts and orders tables in sync (compatibility mode).', 'woocommerce' ),
 			'value'                => $sync_enabled,
 			'desc_tip'             => $sync_message,
+			'description_is_error' => $description_is_error,
+			'id'        => DataSynchronizer::ORDERS_DATA_SYNC_ENABLED_OPTION,
+			'title'     => '',
+			'type'      => 'checkbox',
+			'desc'      => __( 'Enable compatibility mode (synchronizes orders to the posts table).', 'woocommerce' ),
+			'value'     => $sync_enabled,
+			'desc_tip'  => $sync_message,
+			'row_class' => DataSynchronizer::ORDERS_DATA_SYNC_ENABLED_OPTION,
 			'description_is_error' => $description_is_error,
 		);
 	}
