@@ -510,18 +510,11 @@ class CustomOrdersTableController {
 			'id'                   => DataSynchronizer::ORDERS_DATA_SYNC_ENABLED_OPTION,
 			'title'                => '',
 			'type'                 => 'checkbox',
-			'desc'                 => __( 'Keep the posts and orders tables in sync (compatibility mode).', 'woocommerce' ),
+			'desc'                 => __( 'Enable compatibility mode (synchronizes orders to the posts table).', 'woocommerce' ),
 			'value'                => $sync_enabled,
 			'desc_tip'             => $sync_message,
 			'description_is_error' => $description_is_error,
-			'id'        => DataSynchronizer::ORDERS_DATA_SYNC_ENABLED_OPTION,
-			'title'     => '',
-			'type'      => 'checkbox',
-			'desc'      => __( 'Enable compatibility mode (synchronizes orders to the posts table).', 'woocommerce' ),
-			'value'     => $sync_enabled,
-			'desc_tip'  => $sync_message,
-			'row_class' => DataSynchronizer::ORDERS_DATA_SYNC_ENABLED_OPTION,
-			'description_is_error' => $description_is_error,
+			'row_class'            => DataSynchronizer::ORDERS_DATA_SYNC_ENABLED_OPTION,
 		);
 	}
 
