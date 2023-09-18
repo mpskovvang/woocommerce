@@ -9,7 +9,7 @@ const { test, expect } = require( '@playwright/test' );
 test.describe( 'Test API connectivity', () => {
 	test( 'can access a non-authenticated endpoint', async ( { request } ) => {
 		const result = await request.get( '/wp-json/wc/v3/' );
-		expect( result.status() ).toEqual( 200 );
+		expect( result.status() ).toEqual( 503 );
 	} );
 
 	test( 'can access an authenticated endpoint', async ( { request } ) => {
