@@ -1109,13 +1109,7 @@ function wc_setcookie( $name, $value, $expire = 0, $secure = false, $httponly = 
  * @return string the URL.
  */
 function get_woocommerce_api_url( $path ) {
-	if ( Constants::is_defined( 'WC_API_REQUEST_VERSION' ) ) {
-		$version = Constants::get_constant( 'WC_API_REQUEST_VERSION' );
-	} else {
-		$version = substr( WC_API::VERSION, 0, 1 );
-	}
-
-	$url = get_home_url( null, "wc-api/v{$version}/", is_ssl() ? 'https' : 'http' );
+	$url = get_home_url( null, "wc-api/v3/", is_ssl() ? 'https' : 'http' );
 
 	if ( ! empty( $path ) && is_string( $path ) ) {
 		$url .= ltrim( $path, '/' );

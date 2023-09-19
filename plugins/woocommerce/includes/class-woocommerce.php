@@ -317,7 +317,7 @@ final class WooCommerce {
 		$this->define( 'WC_LOG_DIR', $upload_dir['basedir'] . '/wc-logs/' );
 		$this->define( 'WC_SESSION_CACHE_GROUP', 'wc_session_id' );
 		$this->define( 'WC_TEMPLATE_DEBUG_MODE', false );
-		
+
 		// These three are kept defined for compatibility, but are no longer used.
 		$this->define( 'WC_NOTICE_MIN_PHP_VERSION', '7.2' );
 		$this->define( 'WC_NOTICE_MIN_WP_VERSION', '5.2' );
@@ -550,8 +550,6 @@ final class WooCommerce {
 		/**
 		 * REST API.
 		 */
-		include_once WC_ABSPATH . 'includes/legacy/class-wc-legacy-api.php';
-		include_once WC_ABSPATH . 'includes/class-wc-api.php';
 		include_once WC_ABSPATH . 'includes/class-wc-rest-authentication.php';
 		include_once WC_ABSPATH . 'includes/class-wc-rest-exception.php';
 		include_once WC_ABSPATH . 'includes/class-wc-auth.php';
@@ -594,8 +592,7 @@ final class WooCommerce {
 
 		$this->theme_support_includes();
 		$this->query = new WC_Query();
-		$this->api   = new WC_API();
-		$this->api->init();
+		$this->setup_legacy_api_stub();
 	}
 
 	/**
@@ -1097,5 +1094,54 @@ final class WooCommerce {
 	 */
 	public function get_global( string $global_name ) {
 		return wc_get_container()->get( LegacyProxy::class )->get_global( $global_name );
+	}
+
+	private function setup_legacy_api_stub() {
+		add_action('init', function() {
+			add_rewrite_rule('^wc-api/v([1-3]{1})/?$', 'index.php?wc-api-version=$matches[1]&wc-api-route=/', 'top');
+			add_rewrite_rule('^wc-api/v([1-3]{1})(.*)?', 'index.php?wc-api-version=$matches[1]&wc-api-route=$matches[2]', 'top');
+			add_rewrite_endpoint( 'wc-api', EP_ALL );
+		}, 0);
+
+		add_filter( 'query_vars', function($vars) {
+			$vars[] = 'wc-api-version';
+			$vars[] = 'wc-api-route';
+			$vars[] = 'wc-api';
+			return $vars;
+		}, 0 );
+
+		add_action( 'parse_request', array($this, 'parse_legacy_api_request'), 0 );
+	}
+
+	public function parse_legacy_api_request() {
+		global $wp;
+
+		if(class_exists('WC_API')) {
+			return;
+		}
+
+		if ( ! empty( $_GET['wc-api-version'] ) ) {
+			$wp->query_vars['wc-api-version'] = $_GET['wc-api-version'];
+		}
+
+		if ( ! empty( $_GET['wc-api-route'] ) ) {
+			$wp->query_vars['wc-api-route'] = $_GET['wc-api-route'];
+		}
+
+		if( ! empty( $wp->query_vars['wc-api-version'] ) && ! empty( $wp->query_vars['wc-api-route'] ) ) {
+			header(
+				sprintf(
+					'Content-Type: %s; charset=%s',
+					isset( $_GET['_jsonp'] ) ? 'application/javascript' : 'application/json',
+					get_option( 'blog_charset' ) ));
+			status_header(404);
+			echo wp_json_encode(
+				array(
+					'errors' => array(
+						'code' => 'woocommerce_api_disabled',
+						'message' => 'The WooCommerce API is disabled on this site'
+					) ) );
+			exit;
+		}
 	}
 }

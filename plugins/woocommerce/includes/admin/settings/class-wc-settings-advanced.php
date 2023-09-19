@@ -383,6 +383,11 @@ class WC_Settings_Advanced extends WC_Settings_Page {
 	 * @return array
 	 */
 	protected function get_settings_for_legacy_api_section() {
+		$legacy_api_enabled =
+		 'yes' === get_option( 'woocommerce_api_enabled' ) ?
+		 __( 'The legacy REST API is enabled', 'woocommerce' ) :
+		 __( 'The legacy REST API is NOT enabled', 'woocommerce' );
+
 		$settings =
 			array(
 				array(
@@ -393,10 +398,12 @@ class WC_Settings_Advanced extends WC_Settings_Page {
 				),
 				array(
 					'title'   => __( 'Legacy API', 'woocommerce' ),
-					'desc'    => __( 'Enable the legacy REST API', 'woocommerce' ),
+					'desc'    => $legacy_api_enabled,
 					'id'      => 'woocommerce_api_enabled',
 					'type'    => 'checkbox',
 					'default' => 'no',
+					'disabled'      => true,
+					'desc_tip'      => 'The WooCommerce Legacy REST API has been moved to a separate plugin. By installing and activating that plugin the API becomes available.'
 				),
 				array(
 					'type' => 'sectionend',
